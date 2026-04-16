@@ -1,4 +1,4 @@
-import { UserProfile, Crop, CropInput, CropHealthReport, SoilReport } from '../types';
+import { UserProfile, Crop, CropInput, CropHealthReport, SoilReport, UserAdvancedData, PestReport, AdvisoryLog, MarketTrend, VendorBuyer, UserProfileExtended } from '../types';
 
 /**
  * Mock Firebase Service
@@ -13,7 +13,13 @@ const COLLECTIONS = {
   CROPS: 'crops',
   CROP_INPUTS: 'crop_inputs',
   CROP_HEALTH: 'crop_health',
-  SOIL_REPORTS: 'soil_reports'
+  SOIL_REPORTS: 'soil_reports',
+  // ── New collections (mirrors MongoDB schema) ──
+  USER_ADVANCED_DATA: 'user_advanced_data',
+  PEST_REPORTS: 'pest_reports',
+  ADVISORY_LOGS: 'advisory_logs',
+  MARKET_TRENDS: 'market_trends',
+  VENDOR_BUYERS: 'vendor_buyers',
 };
 
 class FirebaseService {
@@ -177,6 +183,110 @@ class FirebaseService {
   async getCropInputs(cropId: string): Promise<CropInput[]> {
     return this.getDocuments<CropInput>(COLLECTIONS.CROP_INPUTS, i => i.cropId === cropId);
   }
+
+  // ── USER_ADVANCED_DATA ────────────────────────────────────────────────────
+
+  async saveAdvancedData(data: UserAdvancedData): Promise<void> {
+    await this.createDocument(COLLECTIONS.USER_ADVANCED_DATA, { ...data, id: data.uid });
+  }
+
+  async getAdvancedData(uid: string): Promise<UserAdvancedData | null> {
+    return this.getDocument<UserAdvancedData>(COLLECTIONS.USER_ADVANCED_DATA, uid);
+  }
+
+  // ── PEST_REPORTS ──────────────────────────────────────────────────────────
+
+  async savePestReport(report: PestReport): Promise<void> {
+    await this.createDocument(COLLECTIONS.PEST_REPORTS, report);
+  }
+
+  async getAllPestReports(): Promise<PestReport[]> {
+    return this.getDocuments<PestReport>(COLLECTIONS.PEST_REPORTS);
+  }
+
+  async getUserPestReports(uid: string): Promise<PestReport[]> {
+    return this.getDocuments<PestReport>(COLLECTIONS.PEST_REPORTS, r => r.uid === uid);
+  }
+
+  /** Geospatial query — haversine distance filter (mirrors MongoDB $geoNear) */
+  async getNearbyPestReports(lat: number, lon: number, radiusKm: number): Promise<PestReport[]> {
+    const all = await this.getAllPestReports();
+    return all.filter(r => {
+      const d = haversineKm(lat, lon, r.lat, r.lon);
+      return d <= radiusKm;
+    }).sort((a, b) => b.reported_at - a.reported_at);
+  }
+
+  // ── ADVISORY_LOGS ─────────────────────────────────────────────────────────
+
+  async saveAdvisoryLog(log: AdvisoryLog): Promise<void> {
+    await this.createDocument(COLLECTIONS.ADVISORY_LOGS, log);
+  }
+
+  async getAdvisoryLogs(uid: string): Promise<AdvisoryLog[]> {
+    const all = await this.getDocuments<AdvisoryLog>(COLLECTIONS.ADVISORY_LOGS, l => l.uid === uid);
+    return all.sort((a, b) => b.created_at - a.created_at);
+  }
+
+  async getLatestAdvisoryLog(uid: string): Promise<AdvisoryLog | null> {
+    const logs = await this.getAdvisoryLogs(uid);
+    return logs[0] || null;
+  }
+
+  // ── MARKET_TRENDS ─────────────────────────────────────────────────────────
+
+  async saveMarketTrend(trend: MarketTrend): Promise<void> {
+    await this.createDocument(COLLECTIONS.MARKET_TRENDS, trend);
+  }
+
+  async getMarketTrends(crop?: string): Promise<MarketTrend[]> {
+    return this.getDocuments<MarketTrend>(
+      COLLECTIONS.MARKET_TRENDS,
+      crop ? t => t.crop.toLowerCase() === crop.toLowerCase() : undefined
+    );
+  }
+
+  // ── VENDOR_BUYERS ─────────────────────────────────────────────────────────
+
+  async getVendors(cropFilter?: string): Promise<VendorBuyer[]> {
+    const all = await this.getDocuments<VendorBuyer>(COLLECTIONS.VENDOR_BUYERS);
+    if (!cropFilter) return all;
+    return all.filter(v =>
+      v.crops_interested.some(c => c.toLowerCase().includes(cropFilter.toLowerCase()))
+    );
+  }
+
+  async saveVendorConnection(uid: string, vendorId: string): Promise<void> {
+    const key = `vendor_connections_${uid}`;
+    const existing: string[] = JSON.parse(localStorage.getItem(key) || '[]');
+    if (!existing.includes(vendorId)) {
+      existing.push(vendorId);
+      localStorage.setItem(key, JSON.stringify(existing));
+    }
+  }
+
+  getVendorConnections(uid: string): string[] {
+    return JSON.parse(localStorage.getItem(`vendor_connections_${uid}`) || '[]');
+  }
+
+  // ── EXTENDED USER PROFILE ─────────────────────────────────────────────────
+
+  async saveUserProfileExtended(profile: UserProfileExtended): Promise<void> {
+    await this.createDocument(COLLECTIONS.USERS, { ...profile, id: profile.uid });
+    this.setCurrentUser(profile as unknown as UserProfile);
+  }
 }
+
+// ─── Haversine distance helper (geospatial) ───────────────────────────────────
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+function toRad(deg: number) { return (deg * Math.PI) / 180; }
 
 export const firebaseService = new FirebaseService();

@@ -1,4 +1,4 @@
-﻿import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
   BarChart3,
@@ -16,12 +16,18 @@ import {
   CloudRain,
   ShieldAlert,
   Tractor,
+  CalendarDays,
+  Bug,
+  Sparkles,
+  ShoppingCart,
 } from 'lucide-react';
 
 import { AppContext } from '../App';
 import { aqiService, AqiRecord } from '../services/aqiService';
 import { UI_TEXT } from '../services/knowledgeBase';
 import { weatherService } from '../services/weatherService';
+import { schedulerService } from '../services/schedulerService';
+import { marketLinkageService } from '../services/marketLinkageService';
 import { WeatherData } from '../types';
 
 import CarbonDashboard from './CarbonDashboard';
@@ -43,6 +49,10 @@ import VorkWorkflow from './VorkWorkflow';
 import WeatherCard from './WeatherCard';
 import WeatherDetails from './WeatherDetails';
 import YieldCalculator from './YieldCalculator';
+import WeeklyAdvisory from './WeeklyAdvisory';
+import PestAlertSystem from './PestAlertSystem';
+import CropRecommendation from './CropRecommendation';
+import MarketLinkage from './MarketLinkage';
 
 const Dashboard: React.FC = () => {
   const context = useContext(AppContext);
@@ -69,6 +79,14 @@ const Dashboard: React.FC = () => {
     if (!user?.location) return;
     const next = weatherService.getWeather(user.location.lat, user.location.lng);
     setWeatherData(next);
+  }, [user]);
+
+  // Start background scheduler + seed market data
+  useEffect(() => {
+    if (!user) return;
+    schedulerService.start(user).catch(console.error);
+    marketLinkageService.seed().catch(console.error);
+    return () => schedulerService.stop();
   }, [user]);
 
   useEffect(() => {
@@ -143,20 +161,6 @@ const Dashboard: React.FC = () => {
 
   const actionCards = [
     {
-      key: 'disease',
-      title: t.detect,
-      subtitle: 'Scan crop risk now',
-      icon: ShieldAlert,
-      bgClass: 'from-rose-500 to-orange-400',
-    },
-    {
-      key: 'soil',
-      title: t.soilHealth,
-      subtitle: 'NPK and pH check',
-      icon: Sprout,
-      bgClass: 'from-amber-500 to-lime-500',
-    },
-    {
       key: 'market',
       title: t.marketPrice,
       subtitle: 'See live mandi trends',
@@ -169,6 +173,20 @@ const Dashboard: React.FC = () => {
       subtitle: 'Forecast output',
       icon: BarChart3,
       bgClass: 'from-emerald-600 to-green-500',
+    },
+    {
+      key: 'disease',
+      title: t.detect,
+      subtitle: 'Scan crop risk now',
+      icon: ShieldAlert,
+      bgClass: 'from-rose-500 to-orange-400',
+    },
+    {
+      key: 'soil',
+      title: t.soilHealth,
+      subtitle: 'NPK and pH check',
+      icon: Sprout,
+      bgClass: 'from-amber-500 to-lime-500',
     },
   ] as const;
 
@@ -251,6 +269,57 @@ const Dashboard: React.FC = () => {
         </button>
       )}
 
+      {/* ── NEW MODULE CARDS ── */}
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <button
+          onClick={() => setView('advisory')}
+          className="app-card group relative overflow-hidden p-4 text-left transition hover:-translate-y-0.5"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-700 to-purple-600 opacity-95 transition group-hover:opacity-100" />
+          <div className="relative">
+            <CalendarDays size={24} className="mb-3 text-white" />
+            <p className="text-lg font-bold text-white">Weekly Advisory</p>
+            <p className="text-sm font-semibold text-violet-200">AI irrigation &amp; harvest plan</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => setView('pest-alerts')}
+          className="app-card group relative overflow-hidden p-4 text-left transition hover:-translate-y-0.5"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-600 to-red-600 opacity-95 transition group-hover:opacity-100" />
+          <div className="relative">
+            <Bug size={24} className="mb-3 text-white" />
+            <p className="text-lg font-bold text-white">Pest Alerts</p>
+            <p className="text-sm font-semibold text-orange-200">15km cluster alert system</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => setView('crop-reco')}
+          className="app-card group relative overflow-hidden p-4 text-left transition hover:-translate-y-0.5"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-yellow-500 opacity-95 transition group-hover:opacity-100" />
+          <div className="relative">
+            <Sparkles size={24} className="mb-3 text-white" />
+            <p className="text-lg font-bold text-white">Crop AI</p>
+            <p className="text-sm font-semibold text-amber-100">Exotic &amp; profitable crops</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => setView('market-link')}
+          className="app-card group relative overflow-hidden p-4 text-left transition hover:-translate-y-0.5"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-teal-600 to-cyan-600 opacity-95 transition group-hover:opacity-100" />
+          <div className="relative">
+            <ShoppingCart size={24} className="mb-3 text-white" />
+            <p className="text-lg font-bold text-white">Market Link</p>
+            <p className="text-sm font-semibold text-teal-100">Connect to buyers &amp; vendors</p>
+          </div>
+        </button>
+      </section>
+
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {actionCards.map(({ key, title, subtitle, icon: Icon, bgClass }) => (
           <button
@@ -270,7 +339,7 @@ const Dashboard: React.FC = () => {
         ))}
       </section>
 
-      <section className="grid grid-cols-3 gap-3">
+      <section className="grid grid-cols-2 gap-3">
         <button
           onClick={() => setView('carbon')}
           className="app-card rounded-2xl bg-gradient-to-br from-emerald-700 to-emerald-500 p-3 text-left text-white"
@@ -286,14 +355,6 @@ const Dashboard: React.FC = () => {
           <Sprout size={20} className="mb-5" />
           <p className="text-xs font-semibold uppercase tracking-wide text-cyan-100">Eco</p>
           <p className="text-sm font-bold">Score</p>
-        </button>
-        <button
-          onClick={() => setView('income')}
-          className="app-card rounded-2xl bg-gradient-to-br from-indigo-700 to-indigo-500 p-3 text-left text-white"
-        >
-          <Wallet size={20} className="mb-5" />
-          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-100">Income</p>
-          <p className="text-sm font-bold">Hub</p>
         </button>
       </section>
 
@@ -319,38 +380,6 @@ const Dashboard: React.FC = () => {
         onOpenFull={() => setView('planner')}
       />
 
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <button
-          onClick={() => setView('workflow')}
-          className="app-card rounded-2xl bg-gradient-to-br from-violet-700 to-indigo-600 p-4 text-left text-white transition hover:-translate-y-0.5"
-        >
-          <p className="text-xs font-semibold uppercase tracking-wide text-violet-100">VorkAI</p>
-          <p className="mt-1 text-xl font-bold">Voice to Workflow</p>
-          <p className="mt-1 text-sm text-violet-100">Run multi-agent automation flows</p>
-        </button>
-
-        <button
-          onClick={() => setView('aqi')}
-          className="app-card rounded-2xl bg-gradient-to-br from-cyan-700 to-sky-600 p-4 text-left text-white transition hover:-translate-y-0.5"
-        >
-          <p className="text-xs font-semibold uppercase tracking-wide text-cyan-100">UrbanLive</p>
-          <p className="mt-1 text-xl font-bold">AQI Command Center</p>
-          <p className="mt-1 text-sm text-cyan-100">Live AQI monitoring and escalation view</p>
-        </button>
-      </section>
-
-      <button
-        onClick={() => setView('community')}
-        className="app-card w-full rounded-2xl bg-gradient-to-r from-[var(--brand-700)] to-[var(--brand-500)] px-5 py-4 text-left text-white"
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-lg font-bold">{t.community}</p>
-            <p className="text-sm text-white/85">Ask nearby farmers and view village alerts</p>
-          </div>
-          <Users size={26} className="animate-float" />
-        </div>
-      </button>
     </div>
   );
 
@@ -510,6 +539,34 @@ const Dashboard: React.FC = () => {
                 Logout
               </button>
             </section>
+          </div>
+        );
+      case 'advisory':
+        return (
+          <div className="space-y-4 animate-fade-in">
+            {renderBackButton()}
+            <WeeklyAdvisory />
+          </div>
+        );
+      case 'pest-alerts':
+        return (
+          <div className="space-y-4 animate-fade-in">
+            {renderBackButton()}
+            <PestAlertSystem />
+          </div>
+        );
+      case 'crop-reco':
+        return (
+          <div className="space-y-4 animate-fade-in">
+            {renderBackButton()}
+            <CropRecommendation />
+          </div>
+        );
+      case 'market-link':
+        return (
+          <div className="space-y-4 animate-fade-in">
+            {renderBackButton()}
+            <MarketLinkage />
           </div>
         );
       default:

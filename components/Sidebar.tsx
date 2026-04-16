@@ -1,4 +1,4 @@
-﻿import React, { useContext } from 'react';
+import React, { useContext } from 'react';
 import {
   BarChart,
   Bot,
@@ -17,6 +17,10 @@ import {
   Users,
   Wind,
   X,
+  CalendarDays,
+  Bug,
+  Sparkles,
+  ShoppingCart,
 } from 'lucide-react';
 import { AppContext } from '../App';
 import { UI_TEXT } from '../services/knowledgeBase';
@@ -49,6 +53,10 @@ const Sidebar: React.FC<Props> = ({ isOpen, onClose }) => {
     { id: 'community', label: t.community, icon: Users },
     { id: 'schemes', label: t.schemes, icon: Landmark },
     { id: 'sustainable', label: t.sustainable, icon: HeartHandshake },
+    { id: 'advisory', label: 'Weekly Advisory', icon: CalendarDays },
+    { id: 'pest-alerts', label: 'Pest Alerts', icon: Bug },
+    { id: 'crop-reco', label: 'Crop Recommendation', icon: Sparkles },
+    { id: 'market-link', label: 'Market Linkage', icon: ShoppingCart },
   ];
 
   const handleNav = (view: string) => {
