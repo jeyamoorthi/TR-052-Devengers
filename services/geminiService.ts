@@ -1,5 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
-import { Language } from "../types";
+import { Language, UserProfile } from "../types";
+import { smartAdvisoryEngine, AdvisoryOutput } from "./smartAdvisoryEngine";
+import { bhashiniService } from "./bhashiniService";
 
 const modelId = "gemini-2.5-flash";
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY?.trim() || "";
@@ -18,6 +20,16 @@ export const geminiService = {
    * STRICT: This function does not invent advice. It only processes the input text.
    */
   async processText(text: string, targetLang: Language, task: 'simplify' | 'translate'): Promise<string> {
+    // Use Bhashini for translation when available
+    if (task === 'translate' && bhashiniService.isAvailable()) {
+      try {
+        const translated = await bhashiniService.translateFromEnglish(text, targetLang);
+        if (translated && translated !== text) return translated;
+      } catch {
+        // Fall through to Gemini
+      }
+    }
+
     const ai = getAiClient();
     if (!ai) {
       return "API key missing. Using offline fallback.";
@@ -44,9 +56,21 @@ export const geminiService = {
   },
 
   /**
-   * Chat assistant that is grounded in the current app context (Weather, Disease, etc)
+   * Chat assistant that is grounded in the current app context (Weather, Disease, etc).
+   * Now powered by the SmartAdvisoryEngine when a user profile is available.
    */
-  async askAssistant(query: string, context: string, lang: Language): Promise<string> {
+  async askAssistant(query: string, context: string, lang: Language, user?: UserProfile | null): Promise<string> {
+    // If we have a full user profile, route through the advisory engine for
+    // richer, personalized, context-grounded responses.
+    if (user && user.name && user.location?.lat) {
+      try {
+        return await smartAdvisoryEngine.askQuestion(user, query, lang);
+      } catch (err) {
+        console.warn("[geminiService] Advisory engine failed, falling back:", err);
+      }
+    }
+
+    // Fallback to the basic Gemini call
     const ai = getAiClient();
     if (!ai) {
       return "I am offline right now. Please set VITE_GEMINI_API_KEY for AI responses.";
@@ -76,5 +100,13 @@ export const geminiService = {
       console.error("Assistant Error:", error);
       return "Service unavailable.";
     }
-  }
+  },
+
+  /**
+   * Generate a full structured advisory for a farmer.
+   * This is the primary entry point for the advisory pipeline.
+   */
+  async generateAdvisory(user: UserProfile, query: string, lang: Language): Promise<AdvisoryOutput> {
+    return smartAdvisoryEngine.generateAdvisory(user, query, lang);
+  },
 };

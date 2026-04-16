@@ -107,7 +107,7 @@ const VoiceAssistant: React.FC = () => {
             contextData += `Weather: ${w.temp}C, ${w.condition}. Alerts: ${w.alerts.map(a => a.type).join(', ') || 'None'}. `;
         }
 
-        const response = await geminiService.askAssistant(command, contextData, language);
+        const response = await geminiService.askAssistant(command, contextData, language, user);
         setProcessing(false);
         setMessages(prev => [...prev, { role: 'bot', text: response }]);
         
