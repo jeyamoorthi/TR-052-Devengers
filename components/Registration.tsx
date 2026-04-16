@@ -1,10 +1,29 @@
-﻿import React, { useContext, useEffect, useState } from 'react';
-import { Check, ChevronRight, MapPin, Mic, MicOff, LocateFixed } from 'lucide-react';
+import React, { useContext, useEffect, useState } from 'react';
+import { Check, ChevronRight, MapPin, Mic, MicOff, LocateFixed, Keyboard, Volume2, EyeOff, Eye, ChevronLeft } from 'lucide-react';
 import { AppContext } from '../App';
 import { firebaseService } from '../services/firebaseService';
 import { UI_TEXT } from '../services/knowledgeBase';
 import { voiceService } from '../services/voiceService';
-import { UserProfile } from '../types';
+import { enrichmentService } from '../services/enrichmentService';
+import { UserProfile, UserProfileExtended } from '../types';
+
+const DISEASE_OPTIONS = ['Blight', 'Rust', 'Powdery Mildew', 'Wilt', 'Leaf Spot', 'Root Rot', 'Aphids', 'None'];
+
+const extractNumber = (text: string) => {
+  const match = text.match(/\d+(\.\d+)?/);
+  return match ? match[0] : '0';
+};
+
+const extractCropStage = (text: string): UserProfileExtended['present_crop_stage'] => {
+  const t = text.toLowerCase();
+  if (t.includes('seedling')) return 'Seedling';
+  if (t.includes('vegetative')) return 'Vegetative';
+  if (t.includes('flowering')) return 'Flowering';
+  if (t.includes('fruiting')) return 'Fruiting';
+  if (t.includes('pre-harvest') || t.includes('pre harvest')) return 'Pre-Harvest';
+  if (t.includes('harvested')) return 'Harvested';
+  return 'Seedling'; // default
+};
 
 const Registration: React.FC = () => {
   const context = useContext(AppContext);

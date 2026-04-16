@@ -48,8 +48,6 @@ const Sidebar: React.FC<Props> = ({ isOpen, onClose }) => {
     { id: 'market', label: t.marketPrice, icon: IndianRupee },
     { id: 'input', label: t.inputAdvisor, icon: Droplets },
     { id: 'yield', label: t.yield, icon: BarChart },
-    { id: 'workflow', label: 'VorkAI Workflow', icon: Bot },
-    { id: 'aqi', label: 'AQI Monitor', icon: Wind },
     { id: 'community', label: t.community, icon: Users },
     { id: 'schemes', label: t.schemes, icon: Landmark },
     { id: 'sustainable', label: t.sustainable, icon: HeartHandshake },

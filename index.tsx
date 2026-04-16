@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
@@ -39,7 +39,7 @@ class ErrorBoundary extends React.Component<EBProps, EBState> {
       );
     }
 
-    return this.props.children;
+    return (this as any).props.children;
   }
 }
 

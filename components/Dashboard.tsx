@@ -23,7 +23,6 @@ import {
 } from 'lucide-react';
 
 import { AppContext } from '../App';
-import { aqiService, AqiRecord } from '../services/aqiService';
 import { UI_TEXT } from '../services/knowledgeBase';
 import { weatherService } from '../services/weatherService';
 import { schedulerService } from '../services/schedulerService';
@@ -31,7 +30,6 @@ import { marketLinkageService } from '../services/marketLinkageService';
 import { WeatherData } from '../types';
 
 import CarbonDashboard from './CarbonDashboard';
-import AQIMonitor from './AQIMonitor';
 import CommunityFeed from './CommunityFeed';
 import DailyPlanner from './DailyPlanner';
 import DiseaseDetector from './DiseaseDetector';
@@ -45,7 +43,6 @@ import SoilHealth from './SoilHealth';
 import SustainabilityScore from './SustainabilityScore';
 import SustainableFarming from './SustainableFarming';
 import TopCrop from './TopCrop';
-import VorkWorkflow from './VorkWorkflow';
 import WeatherCard from './WeatherCard';
 import WeatherDetails from './WeatherDetails';
 import YieldCalculator from './YieldCalculator';
@@ -70,8 +67,6 @@ const Dashboard: React.FC = () => {
 
   const t = UI_TEXT[language];
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-  const [aqiLatest, setAqiLatest] = useState<AqiRecord | null>(null);
-  const [aqiSource, setAqiSource] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
@@ -223,31 +218,6 @@ const Dashboard: React.FC = () => {
           <div className="app-card h-36 animate-pulse bg-white" />
         )}
       </section>
-
-      {aqiLatest && (
-        <button
-          onClick={() => setView('aqi')}
-          className="app-card w-full rounded-2xl border border-[var(--line)] bg-white p-4 text-left transition hover:-translate-y-0.5"
-        >
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--text-700)]">AQI live monitor</p>
-          <div className="mt-2 flex items-end justify-between gap-3">
-            <div>
-              <p
-                className="text-3xl font-extrabold"
-                style={{ color: aqiLevel?.color || 'var(--text-900)' }}
-              >
-                {aqiLatest.aqi}
-              </p>
-              <p className="text-sm font-semibold text-[var(--text-700)]">
-                {aqiLevel?.label || 'Unknown'} | source: {aqiSource}
-              </p>
-            </div>
-            <p className="rounded-full bg-[var(--brand-100)] px-3 py-1 text-xs font-bold text-[var(--brand-700)]">
-              Open AQI Command Center
-            </p>
-          </div>
-        </button>
-      )}
 
       {/* ── NEW MODULE CARDS ── */}
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
