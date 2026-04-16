@@ -1,4 +1,4 @@
-﻿import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
   BarChart3,
@@ -19,13 +19,11 @@ import {
 } from 'lucide-react';
 
 import { AppContext } from '../App';
-import { aqiService, AqiRecord } from '../services/aqiService';
 import { UI_TEXT } from '../services/knowledgeBase';
 import { weatherService } from '../services/weatherService';
 import { WeatherData } from '../types';
 
 import CarbonDashboard from './CarbonDashboard';
-import AQIMonitor from './AQIMonitor';
 import CommunityFeed from './CommunityFeed';
 import DailyPlanner from './DailyPlanner';
 import DiseaseDetector from './DiseaseDetector';
@@ -39,7 +37,6 @@ import SoilHealth from './SoilHealth';
 import SustainabilityScore from './SustainabilityScore';
 import SustainableFarming from './SustainableFarming';
 import TopCrop from './TopCrop';
-import VorkWorkflow from './VorkWorkflow';
 import WeatherCard from './WeatherCard';
 import WeatherDetails from './WeatherDetails';
 import YieldCalculator from './YieldCalculator';
@@ -60,8 +57,6 @@ const Dashboard: React.FC = () => {
 
   const t = UI_TEXT[language];
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-  const [aqiLatest, setAqiLatest] = useState<AqiRecord | null>(null);
-  const [aqiSource, setAqiSource] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
@@ -83,26 +78,7 @@ const Dashboard: React.FC = () => {
     };
   }, []);
 
-  useEffect(() => {
-    let mounted = true;
-    const loadAqi = async () => {
-      try {
-        const next = await aqiService.getLatestRecords();
-        if (!mounted) return;
-        setAqiLatest(next.records.at(-1) || null);
-        setAqiSource(next.source);
-      } catch {
-        // Ignore transient AQI fetch errors; AQI monitor page has explicit error surfacing.
-      }
-    };
 
-    loadAqi();
-    const timer = window.setInterval(loadAqi, 20_000);
-    return () => {
-      mounted = false;
-      window.clearInterval(timer);
-    };
-  }, []);
 
   const firstName = useMemo(
     () => user?.name?.trim().split(' ')[0] || 'Farmer',
@@ -119,16 +95,10 @@ const Dashboard: React.FC = () => {
     []
   );
 
-  const aqiLevel = useMemo(() => {
-    if (!aqiLatest) return null;
-    return aqiService.getAqiLevel(aqiLatest.aqi);
-  }, [aqiLatest]);
+
 
   const focusHint = useMemo(() => {
     if (!weatherData) return 'Fetching local farm conditions...';
-    if (aqiLatest && aqiLatest.aqi > 250) {
-      return 'Priority: AQI is high. Shift non-critical field activities to safer time windows.';
-    }
     if (weatherData.alerts.some((alert) => alert.severity === 'High')) {
       return 'Priority: check disease and drainage in the next 2 hours.';
     }
@@ -139,7 +109,7 @@ const Dashboard: React.FC = () => {
       return 'Priority: irrigate in the evening and reduce heat stress.';
     }
     return 'Priority: healthy window for routine field work today.';
-  }, [weatherData, aqiLatest]);
+  }, [weatherData]);
 
   const actionCards = [
     {
@@ -226,30 +196,7 @@ const Dashboard: React.FC = () => {
         )}
       </section>
 
-      {aqiLatest && (
-        <button
-          onClick={() => setView('aqi')}
-          className="app-card w-full rounded-2xl border border-[var(--line)] bg-white p-4 text-left transition hover:-translate-y-0.5"
-        >
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--text-700)]">AQI live monitor</p>
-          <div className="mt-2 flex items-end justify-between gap-3">
-            <div>
-              <p
-                className="text-3xl font-extrabold"
-                style={{ color: aqiLevel?.color || 'var(--text-900)' }}
-              >
-                {aqiLatest.aqi}
-              </p>
-              <p className="text-sm font-semibold text-[var(--text-700)]">
-                {aqiLevel?.label || 'Unknown'} | source: {aqiSource}
-              </p>
-            </div>
-            <p className="rounded-full bg-[var(--brand-100)] px-3 py-1 text-xs font-bold text-[var(--brand-700)]">
-              Open AQI Command Center
-            </p>
-          </div>
-        </button>
-      )}
+
 
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {actionCards.map(({ key, title, subtitle, icon: Icon, bgClass }) => (
@@ -319,25 +266,7 @@ const Dashboard: React.FC = () => {
         onOpenFull={() => setView('planner')}
       />
 
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <button
-          onClick={() => setView('workflow')}
-          className="app-card rounded-2xl bg-gradient-to-br from-violet-700 to-indigo-600 p-4 text-left text-white transition hover:-translate-y-0.5"
-        >
-          <p className="text-xs font-semibold uppercase tracking-wide text-violet-100">VorkAI</p>
-          <p className="mt-1 text-xl font-bold">Voice to Workflow</p>
-          <p className="mt-1 text-sm text-violet-100">Run multi-agent automation flows</p>
-        </button>
 
-        <button
-          onClick={() => setView('aqi')}
-          className="app-card rounded-2xl bg-gradient-to-br from-cyan-700 to-sky-600 p-4 text-left text-white transition hover:-translate-y-0.5"
-        >
-          <p className="text-xs font-semibold uppercase tracking-wide text-cyan-100">UrbanLive</p>
-          <p className="mt-1 text-xl font-bold">AQI Command Center</p>
-          <p className="mt-1 text-sm text-cyan-100">Live AQI monitoring and escalation view</p>
-        </button>
-      </section>
 
       <button
         onClick={() => setView('community')}
@@ -365,20 +294,7 @@ const Dashboard: React.FC = () => {
             <DailyPlanner userId={user?.uid || user?.id || 'guest'} />
           </div>
         );
-      case 'workflow':
-        return (
-          <div className="space-y-4 animate-fade-in">
-            {renderBackButton()}
-            <VorkWorkflow />
-          </div>
-        );
-      case 'aqi':
-        return (
-          <div className="space-y-4 animate-fade-in">
-            {renderBackButton()}
-            <AQIMonitor />
-          </div>
-        );
+
       case 'journey':
         return (
           <div className="space-y-4 animate-fade-in">

@@ -15,17 +15,12 @@ graph TB
         B --> J[SchemesAdvisor]
         B --> K[IncomeDashboard]
         B --> L[CarbonDashboard]
-        B --> M[AQIMonitor]
         B --> N[SustainabilityScore]
-        B --> O[VorkWorkflow]
     end
 
-    %% Service Layer
     subgraph "Services Layer"
         P[weatherService] --> Q[OpenWeatherMap API]
         R[geminiService] --> S[Google Gemini AI]
-        T[aqiService] --> U[UrbanLive AQI Feed]
-        V[vorkService] --> W[VorkAI FastAPI]
         X[firebaseService] --> Y[Firebase Auth]
         Z[voiceService] --> AA[Web Speech API]
         BB[marketService] --> CC[Market Price APIs]
@@ -43,22 +38,16 @@ graph TB
         OO[External APIs - Real-time Data]
     end
 
-    %% External Integrations
     subgraph "External Services"
         PP[Google Gemini AI]
         QQ[OpenWeatherMap]
-        RR[UrbanLive AQI]
-        SS[VorkAI FastAPI]
         TT[SoilGrids]
         UU[Market APIs]
         VV[Firebase]
     end
 
-    %% Connections
     A --> P
     A --> R
-    A --> T
-    A --> V
     A --> X
     A --> Z
     A --> DD
@@ -68,8 +57,6 @@ graph TB
 
     P --> LL
     R --> S
-    T --> U
-    V --> Y
     X --> AA
     Z --> BB
     DD --> EE
@@ -79,8 +66,6 @@ graph TB
 
     S --> PP
     Q --> QQ
-    U --> RR
-    W --> SS
     EE --> TT
     BB --> UU
     Y --> VV
@@ -117,7 +102,6 @@ flowchart LR
         I --> K[AI Advisory]
         I --> L[Market Data]
         I --> M[Soil Analysis]
-        I --> N[AQI Monitoring]
     end
 
     subgraph "Data Persistence"
@@ -125,13 +109,11 @@ flowchart LR
         K --> P[AI Response Cache]
         L --> Q[Market Cache]
         M --> R[Soil Data Cache]
-        N --> S[AQI History]
         
         O --> T[localStorage]
         P --> T
         Q --> T
         R --> T
-        S --> T
     end
 
     subgraph "Response Generation"

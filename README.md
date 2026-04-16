@@ -1,4 +1,4 @@
-﻿# SmartAgri+
+# SmartAgri+
 
 SmartAgri+ is a mobile-first farming app experience built with React + Vite.
 It is designed to feel like an installable field app, not a generic website.
@@ -9,8 +9,6 @@ It is designed to feel like an installable field app, not a generic website.
 - Weather, disease, market, yield, and sustainability modules
 - Voice assistant with fallback behavior when AI key is missing
 - Daily Planner feature (local persistent farm task tracking)
-- VorkAI integration screen (text/voice workflow execution via FastAPI)
-- UrbanLive AQI integration screen (live AQI feed + full dashboard embed)
 - Installable PWA setup (`manifest` + service worker registration)
 - Offline-friendly shell caching for core app loading
 
@@ -41,8 +39,6 @@ Set your key in `.env`:
 
 ```env
 VITE_GEMINI_API_KEY=your_api_key_here
-VITE_VORKAI_API_URL=http://127.0.0.1:8000
-VITE_AQI_DASHBOARD_URL=http://127.0.0.1:8501
 ```
 
 3. Start dev server
