@@ -239,3 +239,181 @@ export interface FarmRecord {
 }
 
 export type CropStage = 'Seedling' | 'Vegetative' | 'Flowering' | 'Fruiting' | 'Harvest';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NEW INTERFACES — Advanced Modular Features
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Extended User Profile (auth system — mirrors `users` MongoDB collection)
+export interface UserProfileExtended extends UserProfile {
+  email: string;
+  password_hash: string; // bcrypt in production; btoa() in demo
+  present_crop: string;
+  present_crop_stage: 'Seedling' | 'Vegetative' | 'Flowering' | 'Fruiting' | 'Pre-Harvest' | 'Harvested';
+  past_crop: string;
+  past_plant_disease: string[];
+}
+
+// ─── user_advanced_data collection ──────────────────────────────────────────
+export interface SoilNutrients {
+  nitrogen_kg_ha: number;       // kg/ha
+  phosphorus_kg_ha: number;
+  potassium_kg_ha: number;
+  ph: number;
+  moisture_percent: number;
+  organic_carbon_percent: number;
+  texture: 'Sandy' | 'Loamy' | 'Clay' | 'Silt';
+  source: 'SoilGrids' | 'LabReport' | 'Mock';
+  fetched_at: number;
+}
+
+export interface HistoricalWeatherDay {
+  date: string;           // ISO date
+  temp_max: number;
+  temp_min: number;
+  humidity: number;
+  rainfall_mm: number;
+  condition: string;
+}
+
+export interface WeatherForecastDay {
+  date: string;
+  temp_max: number;
+  temp_min: number;
+  rain_prob: number;
+  rainfall_mm: number;
+  condition: string;
+  advice: string;
+}
+
+export interface UserAdvancedData {
+  id: string;             // same as uid
+  uid: string;
+  soil_nutrients: SoilNutrients;
+  historical_weather: HistoricalWeatherDay[];   // last 7 days
+  weather_forecast: WeatherForecastDay[];        // next 7 days
+  enriched_at: number;
+}
+
+// ─── pest_reports collection ─────────────────────────────────────────────────
+export interface PestReport {
+  id: string;
+  uid: string;
+  pest_name: string;
+  severity: 'Low' | 'Medium' | 'High' | 'Critical';
+  lat: number;
+  lon: number;
+  location_name: string;
+  crop_affected: string;
+  preventive_measures: string[];
+  suggested_pesticides: string[];
+  reported_at: number;
+  // product recommendations (e-commerce mock)
+  product_recommendations?: ProductRecommendation[];
+}
+
+export interface ProductRecommendation {
+  id: string;
+  name: string;
+  brand: string;
+  dosage: string;
+  price_range: string;        // e.g. "₹250 – ₹480"
+  available_online: boolean;
+  buy_url: string;            // mock URL
+}
+
+// ─── advisory_logs collection ─────────────────────────────────────────────────
+export interface IrrigationSlot {
+  day: string;                // e.g. "Monday"
+  date: string;               // ISO date
+  time: string;               // e.g. "06:30"
+  duration_minutes: number;
+  method: string;             // e.g. "Drip", "Sprinkler"
+  reminder_sent: boolean;
+}
+
+export interface PestRiskAlert {
+  pest: string;
+  risk_level: 'Low' | 'Medium' | 'High';
+  affected_crop: string;
+  action: string;
+}
+
+export interface HarvestPlan {
+  estimated_harvest_date: string;
+  expected_yield_qtl: number;
+  quality_forecast: 'Low' | 'Medium' | 'High';
+  market_timing_advice: string;
+  post_harvest_tips: string[];
+}
+
+export interface AdvisoryLog {
+  id: string;
+  uid: string;
+  week_start: string;         // ISO date (Monday of week)
+  irrigation_schedule: IrrigationSlot[];
+  pest_risk_alerts: PestRiskAlert[];
+  harvest_plan: HarvestPlan;
+  raw_ai_response: string;
+  created_at: number;
+}
+
+// ─── market_trends collection ─────────────────────────────────────────────────
+export interface MarketTrend {
+  id: string;
+  crop: string;
+  date: string;               // ISO date
+  min_price: number;          // ₹/quintal
+  max_price: number;
+  modal_price: number;
+  market_name: string;        // APMC / Mandi name
+  state: string;
+  trend: 'up' | 'down' | 'stable';
+  demand_level: 'Low' | 'Medium' | 'High' | 'Very High';
+}
+
+// ─── Crop Recommendation Engine ───────────────────────────────────────────────
+export interface CropRecommendationResult {
+  id: string;
+  crop_name: string;
+  exotic: boolean;            // true = exotic/high-value
+  suitability_score: number;  // 0–100
+  expected_yield_qtl_acre: number;
+  market_demand: 'Low' | 'Medium' | 'High' | 'Very High';
+  risk_level: 'Low' | 'Medium' | 'High';
+  estimated_revenue_per_acre: number;   // ₹
+  reasons: string[];          // Why recommended
+  soil_match: string;
+  weather_match: string;
+  market_match: string;
+  grow_duration_days: number;
+  vendor_matches: VendorBuyer[];
+}
+
+// ─── Vendor / Buyer (market_linkage collection) ───────────────────────────────
+export interface VendorBuyer {
+  id: string;
+  name: string;
+  type: 'Buyer' | 'Wholesaler' | 'Exporter' | 'Retailer' | 'FPO';
+  crops_interested: string[];
+  state: string;
+  district: string;
+  lat: number;
+  lon: number;
+  contact: string;            // mock phone
+  rating: number;             // 1–5
+  min_quantity_qtl: number;
+  price_premium_percent: number; // Above mandi price
+  connected?: boolean;        // connection request state
+}
+
+// ─── Scheduler Job ────────────────────────────────────────────────────────────
+export interface ScheduledJob {
+  id: string;
+  type: 'irrigation_reminder' | 'weekly_advisory' | 'pest_check';
+  uid: string;
+  next_run: number;           // timestamp
+  interval_ms: number;
+  last_run: number | null;
+  payload: Record<string, unknown>;
+}

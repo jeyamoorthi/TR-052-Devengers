@@ -26,5 +26,3 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
-
-backend/.env

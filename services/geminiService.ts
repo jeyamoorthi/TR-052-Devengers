@@ -20,16 +20,6 @@ export const geminiService = {
    * STRICT: This function does not invent advice. It only processes the input text.
    */
   async processText(text: string, targetLang: Language, task: 'simplify' | 'translate'): Promise<string> {
-    // Use Bhashini for translation when available
-    if (task === 'translate' && bhashiniService.isAvailable()) {
-      try {
-        const translated = await bhashiniService.translateFromEnglish(text, targetLang);
-        if (translated && translated !== text) return translated;
-      } catch {
-        // Fall through to Gemini
-      }
-    }
-
     const ai = getAiClient();
     if (!ai) {
       return "API key missing. Using offline fallback.";

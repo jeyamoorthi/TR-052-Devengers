@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import {
   BarChart,
+  Bot,
   CloudRain,
   Droplets,
   HeartHandshake,
@@ -14,7 +15,12 @@ import {
   Sprout,
   User,
   Users,
+  Wind,
   X,
+  CalendarDays,
+  Bug,
+  Sparkles,
+  ShoppingCart,
 } from 'lucide-react';
 import { AppContext } from '../App';
 import { UI_TEXT } from '../services/knowledgeBase';
@@ -42,9 +48,15 @@ const Sidebar: React.FC<Props> = ({ isOpen, onClose }) => {
     { id: 'market', label: t.marketPrice, icon: IndianRupee },
     { id: 'input', label: t.inputAdvisor, icon: Droplets },
     { id: 'yield', label: t.yield, icon: BarChart },
+    { id: 'workflow', label: 'VorkAI Workflow', icon: Bot },
+    { id: 'aqi', label: 'AQI Monitor', icon: Wind },
     { id: 'community', label: t.community, icon: Users },
     { id: 'schemes', label: t.schemes, icon: Landmark },
     { id: 'sustainable', label: t.sustainable, icon: HeartHandshake },
+    { id: 'advisory', label: 'Weekly Advisory', icon: CalendarDays },
+    { id: 'pest-alerts', label: 'Pest Alerts', icon: Bug },
+    { id: 'crop-reco', label: 'Crop Recommendation', icon: Sparkles },
+    { id: 'market-link', label: 'Market Linkage', icon: ShoppingCart },
   ];
 
   const handleNav = (view: string) => {

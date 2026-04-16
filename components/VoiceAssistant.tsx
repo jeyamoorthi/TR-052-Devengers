@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect, useRef } from 'react';
 import { AppContext } from '../App';
 import { voiceService } from '../services/voiceService';
 import { geminiService } from '../services/geminiService';
+import { vorkService } from '../services/vorkService';
 import { weatherService } from '../services/weatherService';
 import { intentService } from '../services/intentService';
 import { Mic, X, MessageSquare, Loader2, Send } from 'lucide-react';
@@ -16,6 +17,8 @@ const VoiceAssistant: React.FC = () => {
   const [processing, setProcessing] = useState(false);
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const workflowPattern =
+    /\b(schedule|meeting|email|mail|whatsapp|task|remind|reminder|call|workflow)\b/i;
 
   // Auto-listen when opened
   useEffect(() => {
@@ -73,6 +76,30 @@ const VoiceAssistant: React.FC = () => {
         }, 2000);
 
     } else {
+        // If request sounds like an automation intent, route through VorkAI workflow engine first.
+        if (workflowPattern.test(command)) {
+          try {
+            const workflowResponse = await vorkService.runTextWorkflow(
+              command,
+              user?.uid || user?.id || 'smartagri_user'
+            );
+            const workflowText = workflowResponse.confidence
+              ? `${workflowResponse.message}\n(Workflow confidence: ${(workflowResponse.confidence * 100).toFixed(0)}%)`
+              : workflowResponse.message;
+
+            setProcessing(false);
+            setMessages(prev => [...prev, { role: 'bot', text: workflowText }]);
+            if (isVoiceEnabled) {
+              voiceService.speak(workflowResponse.message, language);
+            }
+            return;
+          } catch (error) {
+            // If workflow backend is down, gracefully continue to AI fallback.
+            console.warn("Workflow fallback to Gemini:", error);
+          }
+        }
+
+        // CHAT (Gemini Fallback)
         // Build Context for Gemini
         let contextData = `User: ${user?.name}, Crop: ${user?.primaryCrop}. `;
         if (user?.location) {
@@ -80,7 +107,7 @@ const VoiceAssistant: React.FC = () => {
             contextData += `Weather: ${w.temp}C, ${w.condition}. Alerts: ${w.alerts.map(a => a.type).join(', ') || 'None'}. `;
         }
 
-        const response = await geminiService.askAssistant(command, contextData, language, user);
+        const response = await geminiService.askAssistant(command, contextData, language);
         setProcessing(false);
         setMessages(prev => [...prev, { role: 'bot', text: response }]);
         
