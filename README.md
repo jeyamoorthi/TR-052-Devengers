@@ -37,13 +37,6 @@ npm install
 cp .env.example .env
 ```
 
-Set your key in `.env`:
-
-```env
-VITE_GEMINI_API_KEY=your_api_key_here
-VITE_VORKAI_API_URL=http://127.0.0.1:8000
-VITE_AQI_DASHBOARD_URL=http://127.0.0.1:8501
-```
 
 3. Start dev server
 
