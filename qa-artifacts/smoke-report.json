@@ -1,0 +1,60 @@
+{
+  "timestamp": "2026-04-05T09:29:52.728Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "checks": [
+    {
+      "name": "App loads without crash",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Language selector shown and selectable",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Login screen visible",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Registration opens after first login",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Dashboard shown after onboarding",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Planner screen reachable from bottom nav",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Planner can add task",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Logout returns to login",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "name": "Manifest endpoint reachable",
+      "passed": true,
+      "details": "HTTP 200"
+    },
+    {
+      "name": "Service worker script reachable",
+      "passed": true,
+      "details": "HTTP 200"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "passCount": 10,
+  "failCount": 0
+}

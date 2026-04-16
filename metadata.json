@@ -1,0 +1,9 @@
+{
+  "name": "SmartAgri+",
+  "description": "A voice-first, offline-capable smart farming assistant for disease detection, weather alerts, and yield optimization. Aligned with SDG 2, 10, and 13.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}

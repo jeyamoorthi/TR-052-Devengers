@@ -1,0 +1,24 @@
+{
+  "name": "SmartAgri+",
+  "short_name": "SmartAgri",
+  "description": "Farm advisory app for weather, disease alerts, market insight, and daily task planning.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5fbf7",
+  "theme_color": "#1f6f43",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
