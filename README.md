@@ -35,7 +35,6 @@ npm install
 2. Configure environment
 
 
-```
 
 3. Start dev server
 
